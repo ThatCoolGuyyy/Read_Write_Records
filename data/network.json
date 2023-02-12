@@ -1,0 +1,145 @@
+{
+  "results": [
+    {
+      "gender": "male",
+      "name": {
+        "title": "Mr",
+        "first": "Simauro",
+        "last": "Pinto"
+      },
+      "location": {
+        "street": {
+          "number": 7660,
+          "name": "Rua Vinte E Dois "
+        },
+        "city": "Uruguaiana",
+        "state": "Rondônia",
+        "country": "Brazil",
+        "postcode": 74189,
+        "coordinates": {
+          "latitude": "-77.1610",
+          "longitude": "-174.8618"
+        },
+        "timezone": {
+          "offset": "+11:00",
+          "description": "Magadan, Solomon Islands, New Caledonia"
+        }
+      },
+      "email": "simauro.pinto@example.com"
+    },
+    {
+      "gender": "female",
+      "name": {
+        "title": "Miss",
+        "first": "Minttu",
+        "last": "Nikula"
+      },
+      "location": {
+        "street": {
+          "number": 7072,
+          "name": "Korkeavuorenkatu"
+        },
+        "city": "Tampere",
+        "state": "South Karelia",
+        "country": "Finland",
+        "postcode": 40964,
+        "coordinates": {
+          "latitude": "-7.2754",
+          "longitude": "164.6131"
+        },
+        "timezone": {
+          "offset": "+9:30",
+          "description": "Adelaide, Darwin"
+        }
+      },
+      "email": "minttu.nikula@example.com"
+    },
+    {
+      "gender": "female",
+      "name": {
+        "title": "Mrs",
+        "first": "Andrijana",
+        "last": "Vujčić"
+      },
+      "location": {
+        "street": {
+          "number": 4136,
+          "name": "Nepoljska"
+        },
+        "city": "Kučevo",
+        "state": "Prizren",
+        "country": "Serbia",
+        "postcode": 99407,
+        "coordinates": {
+          "latitude": "-28.0710",
+          "longitude": "-175.5519"
+        },
+        "timezone": {
+          "offset": "-3:00",
+          "description": "Brazil, Buenos Aires, Georgetown"
+        }
+      },
+      "email": "andrijana.vujcic@example.com"
+    },
+    {
+      "gender": "male",
+      "name": {
+        "title": "Mr",
+        "first": "Dave",
+        "last": "Silva"
+      },
+      "location": {
+        "street": {
+          "number": 9350,
+          "name": "Queens Road"
+        },
+        "city": "Wells",
+        "state": "Isle of Wight",
+        "country": "United Kingdom",
+        "postcode": "KA3Q 0QL",
+        "coordinates": {
+          "latitude": "-80.2331",
+          "longitude": "152.7089"
+        },
+        "timezone": {
+          "offset": "+9:00",
+          "description": "Tokyo, Seoul, Osaka, Sapporo, Yakutsk"
+        }
+      },
+      "email": "dave.silva@example.com"
+    },
+    {
+      "gender": "male",
+      "name": {
+        "title": "Mr",
+        "first": "Rodrigo",
+        "last": "Suarez"
+      },
+      "location": {
+        "street": {
+          "number": 8072,
+          "name": "Avenida de Castilla"
+        },
+        "city": "Alcobendas",
+        "state": "País Vasco",
+        "country": "Spain",
+        "postcode": 65465,
+        "coordinates": {
+          "latitude": "-55.7653",
+          "longitude": "162.3166"
+        },
+        "timezone": {
+          "offset": "+11:00",
+          "description": "Magadan, Solomon Islands, New Caledonia"
+        }
+      },
+      "email": "rodrigo.suarez@example.com"
+    }
+  ],
+  "info": {
+    "seed": "a9b25cd955e2035f",
+    "results": 5,
+    "page": 1,
+    "version": "1.4"
+  }
+}

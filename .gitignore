@@ -1,0 +1,10 @@
+/.idea
+/.vscode
+/.nbproject
+
+/vendor
+/coverage
+/composer.lock
+*.cache
+
+/database/users.dump
