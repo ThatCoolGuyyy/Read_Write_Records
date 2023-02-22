@@ -1,0 +1,20 @@
+{
+    "name": "mac/read-write-system",
+    "require": {
+        "symfony/dotenv": "^6.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mac\\ReadWriteSystem\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "dami",
+            "email": "goldendarmie@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    }
+}
