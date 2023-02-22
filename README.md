@@ -1,46 +1,27 @@
-# Backend Coding Challenge
 
-Welcome to the Backend challenge for Artnight 🎉
+# Aggregate Data to Database
+This PHP script aggregates data from a CSV file and an external API, then saves the data to a SQLite database.
 
-This task wants to test your PHP abilities, in order to do so, we give you space to refactor the code as much as you
-want.
-Ideally, the task should not take you more than 2-3 hours, but feel free to take it as long as you want.
+## Setup
+Make sure you have PHP and SQLite installed on your system.
+Clone this repository.
+Run the script by executing php run.php in the command line.
 
-## Context 📚
+## Configuration
+The following constants can be modified to change the behavior of the script:
 
-We have a small PHP script that read some customers from different sources (csv file and from network), and we want to
-parse and insert them into some database.
+- `USER_URL`: the URL of the network API that returns user data in JSON format.
+- `DATABASE_PATH`: the file path to the SQLite database. The default path is ./database/test.db.
+- `CSV_PATH`: the file path to the CSV file containing user data. The default path is ./data/users.csv.
 
-The code is pretty legacy, it has multiple errors, and is very hard to update/extend it, we would like to completely
-refactor the script, but the main logic have to be the same (read from multiple networks and write the content
-somewhere).
+## Functionality
+The script uses a trait named ReadDataTrait to read data from the CSV file and the external API.
 
-main logic have to be the same (read from multiple networks and write the content
-somewhere).
+The AggregateData class uses the ReadDataTrait trait to read data from the CSV file and the external API. The aggregate method returns an array of merged data from both sources. The saveToDatabase method saves the merged data to a SQLite database named test.db in the database directory.
 
-## Instructions 🔎
+The SQLite database has a table named users with the following columns: id, email, name, and country. The id column is the primary key and is automatically generated. The email column contains the user's email address, the name column contains the user's full name, and the country column contains the user's country.
 
-The project is completely framework-agnostic.
-The code is in the `run.php` file, and the output is stored in a local SQLite database.
+If a row in the merged data array does not have a name or location field, it is skipped.
 
-You can run the project with the following command:
-
-```bash
-php run.php
-```
-
-Some suggestions:
-
-1. Consider readability and best practices
-2. Consider test coverage
-3. _[OPTIONAL]_ We want to replace the database driver (from SQLite to filesystem, MySQL, PostgreSQL...)
-4. _[OPTIONAL]_ Add a different data source (database, filesystem...)
-
-### Network problems 📡
-
-In case you have problems fetching the content from the external network (`randomuser.me`) because the page is down,
-or you have internet connection issues..., you can replace on `run.php` the L20 by the following one.
-
-```php
-$web_provider = json_decode(file_get_contents($getcurrentworkingDirectory . '/data/network.json'))->results;
-```
+## Acknowledgments
+This script was created as a coding challenge for an interview. The ReadDataTrait trait was provided by the interviewer.
