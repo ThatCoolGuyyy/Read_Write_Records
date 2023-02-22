@@ -24,4 +24,4 @@ The SQLite database has a table named users with the following columns: `id, ema
 If a row in the merged data array does not have a name or location field, it is skipped.
 
 ## Acknowledgments
-This script was cloned from repo as a coding challenge. Oluwadamilola Oshungboye refactored the code.
+This script was cloned from repo as a coding challenge. Oluwadamilola Oshungboye refactored and optimized the code.
