@@ -1,157 +1,134 @@
 <?php
-declare(strict_types=1);
+require_once __DIR__ . '/vendor/autoload.php';
+use Symfony\Component\Dotenv\Dotenv;
 
-const USER_URL = 'https://randomuser.me/api/?inc=gender,name,email,location&results=5&seed=a9b25cd955e2035f';
+$dotenv = new Dotenv();
+$dotenv->load(__DIR__.'/env.env');
 
 trait ReadDataTrait {
-
-    public function readNetwork($url) {
-        $data = file_get_contents($url);
-        return json_decode($data, true)['results'];
-    }
 
     public function readCsv($dir) {
         $csv_data = [];
         if (($handle = fopen($dir, "r")) !== FALSE) {
+            $header = fgetcsv($handle, 1000, ",");
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $csv_data[] = $data;
+                $csv_data[] = array_combine($header, $data);
             }
             fclose($handle);
         }
-        array_shift($csv_data); // remove header row
         return $csv_data;
     }
-}
 
+    public function readNetwork($url) {
+        try{
+            $data = file_get_contents($url);
+            $network_data = json_decode($data, true)['results'];
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
+       
+        $network_data = array_map(function($provider) {
+            
+            return [
+                'id' => uniqid(),
+                'gender' => $provider['gender'],
+                'name' => ($provider['name']['first']) . ' ' . ($provider['name']['last']),
+                'country' => $provider['location']['country'],
+                'postcode' => $provider['location']['postcode'],
+                'email' => $provider['email'],
+                'birthday' => (new Datetime('now'))->format('Y-m-d\TH:i:s.u\Z'),
+            ];
+        }, $network_data);
+        return $network_data;
+    }
+}
 class AggregateData {
 
     use ReadDataTrait;
 
     public function aggregate() {
         $csv_data = $this->readCsv(__DIR__.'/data/users.csv');
-        $network_data = $this->readNetwork(USER_URL);
-        $merged_data = array_merge($csv_data, $network_data);
-        return $merged_data;
+        $network_data = $this->readNetwork($_ENV['USER_URL']);
+        return $merged_data = array_merge($csv_data, $network_data);
     }
 
     public function saveToDatabase($merged_data) {
+        $dsn = '';
+        $username = '';
+        $password = '';
+
+        $db_type =$_ENV["DB_TYPE"];
+        switch ($db_type) {
+            case 'sqlite':
+                $dsn = "sqlite:{$_ENV["DB_PATH"]}";
+                $username = " ";
+                $password = " ";
+                break;
+            case 'mysql':
+                $dsn = "mysql:host={$_ENV("DB_HOST")};dbname={$_ENV['DB_DATABASE']};port={$_ENV['DB_PORT']}";
+                $username = $_ENV['DB_USERNAME'];
+                $password = $_ENV['DB_PASSWORD'];
+                break;
+            case 'pgsql':
+                $dsn = "pgsql:host={$_ENV['DB_HOST']};port={$_ENV['DB_PORT']};dbname={$_ENV['DB_DATABASE']}";
+                $username = $_ENV['DB_USERNAME'];
+                $password = $_ENV['DB_PASSWORD'];
+                break;
+            default:
+                echo "Database type not supported";
+                break;
+        }
+
         try {
-            $database = new PDO('sqlite:' . __DIR__ . '/database/test.db');
+            $database = new PDO($dsn, $username, $password);
         } catch (PDOException $e) {
             die($e->getMessage());
         }
         $database->exec('CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY NOT NULL,
             email TEXT NOT NULL,
             name TEXT NOT NULL,
             country TEXT
         )');
         foreach($merged_data as $data) {
+            $sql = "INSERT INTO users (id, email, name, country) VALUES ( :id, :email, :name, :country)";
+            $stmt = $database->prepare($sql);
+            $id = $data['id'];
+            $email = $data['email'];
+            $name = $data['name'];
+            $country = $data['country'];
             
-            if (!isset($data['name']) || !isset($data['location'])) {
+            $id_check = $database->prepare("SELECT COUNT(*) FROM users WHERE id = :id");
+            $id_check->bindValue(':id', $id);
+            $id_check->execute();
+            $count = $id_check->fetchColumn();
+            if ($count > 0) {
+                echo "User with ID '{$id}' already exists in the database".PHP_EOL;
                 continue;
             }
-            $sql = "INSERT INTO users ( email, name, country) VALUES ( :email, :name, :country)";
-            $stmt = $database->prepare($sql);
-            $email = $data['email'] ?? '';
-            $name = ($data['name']['first'] ?? '') . ' ' . ($data['name']['last'] ?? '');
-            $country = $data['location']['country'] ?? '';
-            // Changed bindParam to bindValue to avoid passing variables by reference
-            // $stmt->bindValue(':id', $email);
+
+            $stmt->bindValue(':id', $id);
             $stmt->bindValue(':email', $email);
             $stmt->bindValue(':name', $name);
             $stmt->bindValue(':country', $country);
-            $stmt->execute();
+            try{
+                $stmt->execute();
+                if ($stmt->rowCount() === 0) {
+                    throw new Exception("User with ID '{$id}' already exists in the database");
+                }
+                echo 'User with ID '.$id.' imported'. PHP_EOL;
+            } catch (PDOException $e) {
+                echo $e->getMessage();
+            }
         }
         $database = null;
-        echo 'users imported'. PHP_EOL;
+        
     }
 }
 
 $aggregator = new AggregateData();
 $merged_data = $aggregator->aggregate();
 $aggregator->saveToDatabase($merged_data);
-
-        
-    // function read_csv()
-    // {
-        // $getcurrentworkingDirectory = getcwd();
-        // $csv_provider = array_map('str_getcsv', file($getcurrentworkingDirectory . '/data/users.csv'));
-        // $csvProviders = []; // possible fix
-        // array_walk($csvProviders, function (&$a) use ($csv_provider) {
-        //     $a = array_combine($csv_provider[0], $a);
-        // });
-        // array_shift($csv_provider); # Remove header column
-        // return $csv_provider;
-    // }
-    // $csv_provider = array_map('str_getcsv', file($getcurrentworkingDirectory . '/data/users.csv'));
-    // $csvProviders = []; // possible fix
-    // array_walk($csvProviders, function (&$a) use ($csv_provider) {
-    //     $a = array_combine($csv_provider[0], $a);
-    // });
-    // array_shift($csv_provider); # Remove header column
-
-    // function read_network()
-    // {
-        // $getcurrentworkingDirectory = getcwd();
-        // $url = USER_URL;
-        // $web_provider = json_decode(file_get_contents($getcurrentworkingDirectory . '/data/network.json'))->results;
-        // $pr = []; // possible fix 
-        // array_walk($pr, function (&$a) use ($web_provider) {
-        //     $a = array_combine($web_provider[0], $a);
-        // }); // possible fix
-        
-    // }
-    // $url = USER_URL;
-    // $web_provider = json_decode(file_get_contents($getcurrentworkingDirectory . '/data/network.json'))->results;
-    // $pr = []; // possible fix 
-    // array_walk($pr, function (&$a) use ($web_provider) {
-    //     $a = array_combine($web_provider[0], $a);
-    // }); // possible fix
-
-    
-    // $providers = array_merge($csv_provider, $b); # merge arrays
-    // $database = new SQLite3($getcurrentworkingDirectory . '/database/users.dump');
-    // $database->exec('CREATE TABLE IF NOT EXISTS users (
-    //     id   INTEGER PRIMARY KEY,
-    //     email TEXT    NOT NULL,
-    //     name TEXT NOT NULL,
-    //     country TEXT)
-    // ');
-
-    // foreach ($providers as $user) {
-    //     $result = $database->query('SELECT count(*) FROM users WHERE id = ' . $user[0]);
-    //     $num = $result->fetchArray(SQLITE3_NUM);
-    //     if ($num[0] === 0) {
-    //         $email = $user[5];
-    //         $name = $user[2];
-    //         $id = $user[0];
-    //         $country = $user[3];
-    //         $database->exec("INSERT INTO users VALUES($id,'$email','$name','$country')");
-    //     }
-    // }
-// try{
-//     $database = new PDO('sqlite3:/database/test.db');
-//     } catch (PDOException $e) {
-//         echo $e->getMessage();
-// }
-    
-//     $database->exec('CREATE TABLE IF NOT EXISTS users (
-//         id   INTEGER PRIMARY KEY,
-//         email TEXT    NOT NULL,
-//         name TEXT NOT NULL,
-//         country TEXT)
-//     ');
-//     foreach($providers as $data){
-//         $sql = "INSERT INTO users (id, email, name, country) VALUES (:id, :email, :name, :country)";
-//         $stmt = $database->prepare($sql);
-//         $stmt->bindParam(':id', $data['name']);
-//         $stmt->bindParam(':email', $data['email']);
-//         $stmt->bindParam(':country', $data['country']);
-//         $stmt->execute();
-//     }
-//     $pdo = null;
-//     echo 'Users imported!' . PHP_EOL;
-// ?>
+?>
 
 
