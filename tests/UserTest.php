@@ -1,48 +1,30 @@
 <?php
 
 require_once '/Users/mac/Desktop/Projects/Read-Write-System/run.php';
-
+// require_once __DIR__ . '/vendor/autoload.php';
+// use Symfony\Component\Dotenv\Dotenv;
+// $dotenv = new Dotenv();
+// $dotenv->load(__DIR__.'/env.env');
 use PHPUnit\Framework\TestCase;
 
 class UserTest extends TestCase {
 
-    public function testAggregate() {
-        $aggregator = new AggregateData();
-        $merged_data = $aggregator->aggregate();
-        $this->assertNotEmpty($merged_data);
-    }
+    use ReadDataTrait;
 
-    public function testSaveToDatabase($merged_data) {
+    public function testReadCsv()
+    {
         
-        $database = new PDO('sqlite::memory:');
-        $database->exec('CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT NOT NULL,
-            name TEXT NOT NULL,
-            country TEXT
-        )');
-         foreach($merged_data as $data) {
-            
-            if (!isset($data['name']) || !isset($data['location'])) {
-                continue;
-            }
-            $sql = "INSERT INTO users ( email, name, country) VALUES ( :email, :name, :country)";
-            $stmt = $database->prepare($sql);
-            $email = $data['email'] ?? '';
-            $name = ($data['name']['first'] ?? '') . ' ' . ($data['name']['last'] ?? '');
-            $country = $data['location']['country'] ?? '';
-            $stmt->bindValue(':email', $email);
-            $stmt->bindValue(':name', $name);
-            $stmt->bindValue(':country', $country);
-            $stmt->execute();
-        }
-        $aggregator = new AggregateData();
-        $merged_data = $aggregator->aggregate();
-        $aggregator->saveToDatabase($merged_data);
-        $stmt = $database->prepare('SELECT COUNT(*) FROM users');
-        $stmt->execute();
-        $result = $stmt->fetchColumn();
-        $this->assertEquals(count($merged_data), $result);
+        $csv_data = $this->readCsv($_ENV['CSV_PATH']);
+        $csv_data;
+        // $this->assertEquals(['id' => '200189617246', 'gender' => 'male'], $csv_data);
+        $this->assertIsArray($csv_data);
+        $this->assertArrayHasKey('id', $csv_data[0]);
+    }
+    
+    public function testReadNetwork()
+    {
+        $network_data = $this->readNetwork($_ENV['USER_URL']);
+        $this->assertIsArray($network_data);
     }
 
 }
